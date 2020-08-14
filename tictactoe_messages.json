@@ -1,0 +1,12 @@
+{
+  "welcome": "Welcome to Tic-Tac-Toe!\n",
+  "yourTurn": "It's your turn!\n",
+  "compTurn": "It's the computer's turn!\n",
+  "selectMove": "Select the number of the move you'd like to make.\n",
+  "invalid": "That's not a valid choice. Try again.",
+  "win": "You win!\n",
+  "lose": "You lose!\n",
+  "tie": "It's a tie!\n",
+  "playAgain": "Play again? Type 'Y' or 'N'.",
+  "compMove": "The computer played here.\n"
+}
