@@ -83,6 +83,7 @@ function weHaveAWinner(playedMoves) {
 }
 
 prompt(messages.welcome);
+prompt(messages.continue);
 readline.question();
 console.clear();
 
@@ -93,7 +94,7 @@ while (true) {
   let moveOptions = {1: '1. Row 1, Column 1', 2: '2. Row 1, Column 2',
                      3: '3. Row 1, Column 3', 4: '4. Row 2, Column 1',
                      5: '5: Row 2, Column 2', 6: '6: Row 2, Column 3',
-                     7: '7. Row 1, Column 3', 8: '8: Row 1, Column 3',
+                     7: '7. Row 3, Column 1', 8: '8: Row 3, Column 2',
                      9: '9: Row 3, Column 3'};
 
   let guestMoves = [];
@@ -109,7 +110,6 @@ while (true) {
 
     if (currentPlayerGuest) {
       prompt(messages.yourTurn);
-      readline.question();
       prompt(messages.selectMove);
 
       displayMoveOptions(moveOptions);
@@ -126,6 +126,7 @@ while (true) {
 
     } else {
       prompt(messages.compTurn);
+      prompt(messages.continue);
       readline.question();
       console.clear();
 

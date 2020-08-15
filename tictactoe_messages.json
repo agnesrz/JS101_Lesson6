@@ -1,5 +1,6 @@
 {
   "welcome": "Welcome to Tic-Tac-Toe!\n",
+  "continue": "Press any key to continue.\n",
   "yourTurn": "It's your turn!\n",
   "compTurn": "It's the computer's turn!\n",
   "selectMove": "Select the number of the move you'd like to make.\n",
