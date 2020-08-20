@@ -6,6 +6,11 @@ const COMPUTER_MARKER = 'O';
 const INITIAL_SCORE = 0;
 const SCORE_NEEDED_TO_WIN = 3;
 const INITIAL_ROUND = 1;
+const WINNING_LINES = [
+  [1, 2, 3], [4, 5, 6], [7, 8, 9], // rows
+  [1, 4, 7], [2, 5, 8], [3, 6, 9], // columns
+  [1, 5, 9], [3, 5, 7]             // diagonals
+];
 
 function prompt(message) {
   console.log(`=> ${message}`);
@@ -72,9 +77,22 @@ function playerChoosesSquare(board) {
 }
 
 function computerChoosesSquare(board) {
-  let randomIndex = Math.floor(Math.random() * emptySquares(board).length);
+  let possibleMoves = emptySquares(board);
+  let randomIndex;
+  
+  if (detectIfWinImminent(board)) {
+    // filter - possibleMoves.filter()
+    // view which moves have already been made  //winninglines
+    // check if there are any impending wins
+    // if there is 1, play there
+    // if there are more than 1, find out how many
+    // based on that, choose random index for square
+  } else {
+    randomIndex = Math.floor(Math.random() * emptySquares(board).length);
+  }
+  
   let square = emptySquares(board)[randomIndex];
-
+  
   board[square] = COMPUTER_MARKER;
 }
 
@@ -94,24 +112,32 @@ function someoneWonGame(scoreBoard) {
   return Object.values(scoreBoard).includes(SCORE_NEEDED_TO_WIN);
 }
 
-function detectRoundWinner(board) {
-  let winningLines = [
-    [1, 2, 3], [4, 5, 6], [7, 8, 9], // rows
-    [1, 4, 7], [2, 5, 8], [3, 6, 9], // columns
-    [1, 5, 9], [3, 5, 7]             // diagonals
-  ];
+function detectIfPlayerWinImminent(board) {
+  let existingPlayerMoves = Object.entries(board)
+                            .filter(element => element[1] === HUMAN_MARKER)
+                            .map(element => element[0]);
+  let unplayedMoves = emptySquares(board);
+  
+  for (let line = 0; line < WINNING_LINES.length; line++) {
+    for (let moveOpt = 0; moveOpt < unplayedMoves.length; moveOpt++) {
+      if //need to create copy of board obj and test by pushing uplayed move to it one by one. If detect round winner func returns winner, return true;
+    }
+  }
+  return false;
+}
 
-  for (let line = 0; line < winningLines.length; line++) {
-    let [sq1, sq2, sq3] = winningLines[line];
+function detectRoundWinner(board) {
+  for (let line = 0; line < WINNING_LINES.length; line++) {
+    let [sq1, sq2, sq3] = WINNING_LINES[line];
 
     if (
-      board[sq1] === HUMAN_MARKER &&
+        board[sq1] === HUMAN_MARKER &&
         board[sq2] === HUMAN_MARKER &&
         board[sq3] === HUMAN_MARKER
     ) {
       return 'Player';
     } else if (
-      board[sq1] === COMPUTER_MARKER &&
+        board[sq1] === COMPUTER_MARKER &&
         board[sq2] === COMPUTER_MARKER &&
         board[sq3] === COMPUTER_MARKER
     ) {
@@ -131,10 +157,12 @@ function detectGameWinner(scoreBoard) {
 }
 
 function joinOr(array, punctuation, separator) {
-  if (array.length === 1) {
-    return array[0];
-  } else if (array.length === 2) {
-    return array[0] + ' ' + separator + array[1];
+  let elementsLeft = array.length;
+  
+  switch (elementsLeft) {
+    case 1: return array[0];
+    case 2: return array[0] + ' ' + separator + array[1];
+    default: break;
   }
 
   let firstPart = array.slice(0, array.length - 1).join(punctuation + ' ');
