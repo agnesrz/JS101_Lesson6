@@ -5,7 +5,11 @@ const HUMAN_MARKER = 'X';
 const COMPUTER_MARKER = 'O';
 const INITIAL_SCORE = 0;
 const SCORE_NEEDED_TO_WIN = 3;
-const INITIAL_ROUND = 1;
+const PLAYER_WHO_STARTS = 'choose';
+const PLAYER1 = 'player';
+const PLAYER2 = 'computer';
+const FIRST_ROUND = 1;
+const BEST_SQUARE = '5';
 const WINNING_LINES = [
   [1, 2, 3], [4, 5, 6], [7, 8, 9], // rows
   [1, 4, 7], [2, 5, 8], [3, 6, 9], // columns
@@ -20,7 +24,7 @@ function displayScoreInfo(boardObj, round) {// need to lookup why function can't
   let boardIsEmpty = Object.values(boardObj)
                            .every(curVal => curVal === INITIAL_MARKER);
 
-  if (round === INITIAL_ROUND && boardIsEmpty)  {
+  if (round === FIRST_ROUND && boardIsEmpty)  {
     console.log(`The first player to win ${SCORE_NEEDED_TO_WIN} games wins!`);
   }
 }
@@ -60,7 +64,7 @@ function initializeBoard() {
 function initializeScore() {
   return {player: INITIAL_SCORE, computer: INITIAL_SCORE};
 }
-
+/*
 function playerChoosesSquare(board) {
   let square; // declared here so we can use it outside the loop
 
@@ -75,27 +79,47 @@ function playerChoosesSquare(board) {
 
   board[square] = HUMAN_MARKER;
 }
+*/
+function chooseSquare(board, round, score, currentPlayer) {
+  let square;
+  
+  if (currentPlayer === 'player') {
+    displayBoard(board, round, score);
+    prompt(`Choose a square: ${joinOr(emptySquares(board), ',', 'or')}`);
+    square = readline.question().trim();
 
-function computerChoosesSquare(board) {
-  let possibleMoves = emptySquares(board);
-  let randomIndex;
-  
-  if (detectIfWinImminent(board)) {
-    // filter - possibleMoves.filter()
-    // view which moves have already been made  //winninglines
-    // check if there are any impending wins
-    // if there is 1, play there
-    // if there are more than 1, find out how many
-    // based on that, choose random index for square
+    while (!emptySquares(board).includes(square)) {
+      prompt("Sorry, that's not a valid choice.");
+      square = readline.question().trim();
+    }
+    board[square] = HUMAN_MARKER;
   } else {
-    randomIndex = Math.floor(Math.random() * emptySquares(board).length);
+    let index;
+    let moveOptions = smartMoves(board, COMPUTER_MARKER) ||
+                      smartMoves(board, HUMAN_MARKER) ||
+                      emptySquares(board);
+    
+    moveOptions.includes(BEST_SQUARE) ? index = moveOptions.indexOf(BEST_SQUARE) :
+                                        index = Math.floor(Math.random() * moveOptions.length);
+    square = moveOptions[index];
+    board[square] = COMPUTER_MARKER;
   }
-  
-  let square = emptySquares(board)[randomIndex];
-  
+  //board[square] = currentPlayer = 'player' ? HUMAN_MARKER : COMPUTER_MARKER;
+}
+/*
+function computerChoosesSquare(board) {
+  let moveOptions = smartMoves(board, COMPUTER_MARKER) ||
+                    smartMoves(board, HUMAN_MARKER) ||
+                    emptySquares(board);
+  let index;
+
+  moveOptions.includes(BEST_SQUARE) ? index = moveOptions.indexOf(BEST_SQUARE) :
+                                      index = Math.floor(Math.random() * moveOptions.length);
+
+  let square = moveOptions[index];
   board[square] = COMPUTER_MARKER;
 }
-
+*/
 function emptySquares(board) {
   return Object.keys(board).filter(key => board[key] === INITIAL_MARKER);
 }
@@ -112,18 +136,21 @@ function someoneWonGame(scoreBoard) {
   return Object.values(scoreBoard).includes(SCORE_NEEDED_TO_WIN);
 }
 
-function detectIfPlayerWinImminent(board) {
-  let existingPlayerMoves = Object.entries(board)
-                            .filter(element => element[1] === HUMAN_MARKER)
-                            .map(element => element[0]);
+function smartMoves(board, marker) {
   let unplayedMoves = emptySquares(board);
-  
-  for (let line = 0; line < WINNING_LINES.length; line++) {
-    for (let moveOpt = 0; moveOpt < unplayedMoves.length; moveOpt++) {
-      if //need to create copy of board obj and test by pushing uplayed move to it one by one. If detect round winner func returns winner, return true;
+  let smartMoves = [];
+
+  for (let idx = 0; idx < unplayedMoves.length; idx += 1) {
+    let testBoard = Object.assign({}, board);
+    let move = unplayedMoves[idx];
+
+    testBoard[move] = marker;
+
+    if (someoneWonRound(testBoard)) {
+      smartMoves.push(move);
     }
   }
-  return false;
+  return smartMoves.length > 0 ? smartMoves : null;
 }
 
 function detectRoundWinner(board) {
@@ -158,10 +185,10 @@ function detectGameWinner(scoreBoard) {
 
 function joinOr(array, punctuation, separator) {
   let elementsLeft = array.length;
-  
+
   switch (elementsLeft) {
     case 1: return array[0];
-    case 2: return array[0] + ' ' + separator + array[1];
+    case 2: return array[0] + ' ' + separator + ' ' + array[1];
     default: break;
   }
 
@@ -179,23 +206,38 @@ function displayScore(score) {
   console.log('');
 }
 
+function determineFirstPlayer() {
+  if (PLAYER_WHO_STARTS === 'choose') {
+    prompt("Would you like to make the first move? Press 'Y' for 'Yes' and 'N' for 'No.'");
+    let answer = readline.question().trim().toUpperCase();
+    
+    while (answer !== 'Y' && answer !== 'N') {
+      prompt("That's not a valid answer. Please try again");
+      answer = readline.question().trim().toUpperCase();
+    }
+    return answer === 'Y' ? 'player' : 'computer';
+  } else {
+    return PLAYER_WHO_STARTS;  
+  }
+}
+
+function alternatePlayer(currentPlayer) {
+  return currentPlayer === PLAYER1 ? PLAYER2 : PLAYER1;
+}
+
 while (true) {////////////////////////////////////// <<<<<<<<<<<<<< game start
   let score = initializeScore();
-  let round = INITIAL_ROUND;
-
+  let round = FIRST_ROUND;
+  let currentPlayer = determineFirstPlayer();
+  
   while (!someoneWonGame(score)) {
     let board = initializeBoard();
 
-    while (true) {
-      displayBoard(board, round, score);//would be cool to write program where you could easily see your functions
-
-      playerChoosesSquare(board);
-      if (someoneWonRound(board) || boardFull(board)) break;
-
-      computerChoosesSquare(board);
-      if (someoneWonRound(board) || boardFull(board)) break;
+    while (!someoneWonRound(board) && !boardFull(board)) {
+      chooseSquare(board, round, score, currentPlayer);
+      currentPlayer = alternatePlayer(currentPlayer);
     }
-
+    
     displayBoard(board);
 
     if (someoneWonRound(board)) {
@@ -219,10 +261,16 @@ while (true) {////////////////////////////////////// <<<<<<<<<<<<<< game start
     prompt('Press any key to continue to the next round.');
     readline.question();
   }
-
-  prompt('Play again? (y or n)');
-  let answer = readline.question().toLowerCase()[0];
-  if (answer !== 'y') break;
+  
+  prompt('Play again? (Y or N)');
+  let response = readline.question().trim.toUpperCase();
+  
+  while (response !== 'Y' && response !== 'N') {
+   prompt("Sorry, that's not a valid choice");
+   response = readline.question().trim.toUpperCase();
+  }
+  
+  if (response === 'N') break;
 }
 
 prompt('Thanks for playing Tic Tac Toe!');
