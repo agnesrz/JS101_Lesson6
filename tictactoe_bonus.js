@@ -22,7 +22,7 @@ function prompt(message) {
 
 function displayScoreInfo(boardObj, round) {// need to lookup why function can't access score variable in outer scope
   let boardIsEmpty = Object.values(boardObj)
-                           .every(curVal => curVal === INITIAL_MARKER);
+                    .every(curVal => curVal === INITIAL_MARKER);
 
   if (round === FIRST_ROUND && boardIsEmpty)  {
     console.log(`The first player to win ${SCORE_NEEDED_TO_WIN} games wins!`);
@@ -64,25 +64,10 @@ function initializeBoard() {
 function initializeScore() {
   return {player: INITIAL_SCORE, computer: INITIAL_SCORE};
 }
-/*
-function playerChoosesSquare(board) {
-  let square; // declared here so we can use it outside the loop
 
-  while (true) {
-    prompt(`Choose a square: ${joinOr(emptySquares(board), ',', 'or')}`);
-    square = readline.question().trim(); // input trimmed to allow spaces in input
-
-    if (emptySquares(board).includes(square)) break;
-
-    prompt("Sorry, that's not a valid choice.");
-  }
-
-  board[square] = HUMAN_MARKER;
-}
-*/
 function chooseSquare(board, round, score, currentPlayer) {
   let square;
-  
+
   if (currentPlayer === 'player') {
     displayBoard(board, round, score);
     prompt(`Choose a square: ${joinOr(emptySquares(board), ',', 'or')}`);
@@ -98,28 +83,14 @@ function chooseSquare(board, round, score, currentPlayer) {
     let moveOptions = smartMoves(board, COMPUTER_MARKER) ||
                       smartMoves(board, HUMAN_MARKER) ||
                       emptySquares(board);
-    
+
     moveOptions.includes(BEST_SQUARE) ? index = moveOptions.indexOf(BEST_SQUARE) :
                                         index = Math.floor(Math.random() * moveOptions.length);
     square = moveOptions[index];
     board[square] = COMPUTER_MARKER;
   }
-  //board[square] = currentPlayer = 'player' ? HUMAN_MARKER : COMPUTER_MARKER;
 }
-/*
-function computerChoosesSquare(board) {
-  let moveOptions = smartMoves(board, COMPUTER_MARKER) ||
-                    smartMoves(board, HUMAN_MARKER) ||
-                    emptySquares(board);
-  let index;
 
-  moveOptions.includes(BEST_SQUARE) ? index = moveOptions.indexOf(BEST_SQUARE) :
-                                      index = Math.floor(Math.random() * moveOptions.length);
-
-  let square = moveOptions[index];
-  board[square] = COMPUTER_MARKER;
-}
-*/
 function emptySquares(board) {
   return Object.keys(board).filter(key => board[key] === INITIAL_MARKER);
 }
@@ -158,15 +129,15 @@ function detectRoundWinner(board) {
     let [sq1, sq2, sq3] = WINNING_LINES[line];
 
     if (
-        board[sq1] === HUMAN_MARKER &&
-        board[sq2] === HUMAN_MARKER &&
-        board[sq3] === HUMAN_MARKER
+      board[sq1] === HUMAN_MARKER &&
+      board[sq2] === HUMAN_MARKER &&
+      board[sq3] === HUMAN_MARKER
     ) {
       return 'Player';
     } else if (
-        board[sq1] === COMPUTER_MARKER &&
-        board[sq2] === COMPUTER_MARKER &&
-        board[sq3] === COMPUTER_MARKER
+      board[sq1] === COMPUTER_MARKER &&
+      board[sq2] === COMPUTER_MARKER &&
+      board[sq3] === COMPUTER_MARKER
     ) {
       return 'Computer';
     }
@@ -181,6 +152,7 @@ function detectGameWinner(scoreBoard) {
       return key[0].toUpperCase() + key.slice(1);
     }
   }
+  return undefined;
 }
 
 function joinOr(array, punctuation, separator) {
@@ -210,14 +182,14 @@ function determineFirstPlayer() {
   if (PLAYER_WHO_STARTS === 'choose') {
     prompt("Would you like to make the first move? Press 'Y' for 'Yes' and 'N' for 'No.'");
     let answer = readline.question().trim().toUpperCase();
-    
+
     while (answer !== 'Y' && answer !== 'N') {
       prompt("That's not a valid answer. Please try again");
       answer = readline.question().trim().toUpperCase();
     }
     return answer === 'Y' ? 'player' : 'computer';
   } else {
-    return PLAYER_WHO_STARTS;  
+    return PLAYER_WHO_STARTS;
   }
 }
 
@@ -225,11 +197,11 @@ function alternatePlayer(currentPlayer) {
   return currentPlayer === PLAYER1 ? PLAYER2 : PLAYER1;
 }
 
-while (true) {////////////////////////////////////// <<<<<<<<<<<<<< game start
+while (true) {//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< game start
   let score = initializeScore();
   let round = FIRST_ROUND;
   let currentPlayer = determineFirstPlayer();
-  
+
   while (!someoneWonGame(score)) {
     let board = initializeBoard();
 
@@ -237,7 +209,7 @@ while (true) {////////////////////////////////////// <<<<<<<<<<<<<< game start
       chooseSquare(board, round, score, currentPlayer);
       currentPlayer = alternatePlayer(currentPlayer);
     }
-    
+
     displayBoard(board);
 
     if (someoneWonRound(board)) {
@@ -261,15 +233,15 @@ while (true) {////////////////////////////////////// <<<<<<<<<<<<<< game start
     prompt('Press any key to continue to the next round.');
     readline.question();
   }
-  
+
   prompt('Play again? (Y or N)');
-  let response = readline.question().trim.toUpperCase();
-  
+  let response = readline.question().trim().toUpperCase();
+
   while (response !== 'Y' && response !== 'N') {
-   prompt("Sorry, that's not a valid choice");
-   response = readline.question().trim.toUpperCase();
+    prompt("Sorry, that's not a valid choice");
+    response = readline.question().trim().toUpperCase();
   }
-  
+
   if (response === 'N') break;
 }
 
