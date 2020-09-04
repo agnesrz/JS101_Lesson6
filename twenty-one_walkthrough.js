@@ -1,11 +1,8 @@
-//// note to self - SOME BUGS I NEED TO FIX; sometimes there is a premature 'you've busted' other times it skips asking me to stay to go to dealer's turn
-
 const readline = require('readline-sync');
 const fullDeck = {diamonds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                   hearts: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                   spades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                   clubs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']};
-
 
 function initializeDeck(fullDeck) {
   let deck = [];
@@ -14,7 +11,6 @@ function initializeDeck(fullDeck) {
       deck.push([key[0], fullDeck[key][index]]);
     }
   }
-
   return deck;
 }
 
@@ -58,10 +54,10 @@ function shuffle(array) {
 function playAgain() {
   console.log("Play again? Type 'Y' or 'N'.");
 
-  let answer = readline.question().toUpperCase();
+  let answer = readline.question().toUpperCase().trim();
   while (answer !== "N" && answer !== "Y") {
     console.log("That's not a valid choice. Try again.");
-    answer = readline.question().toUpperCase();
+    answer = readline.question().toUpperCase().trim();
   }
 
   if (answer === 'N') keepPlaying = false;
@@ -89,18 +85,17 @@ function displayCards(playerHand, playerScore, dealerHand, dealerScore, numDeale
     console.log(`Dealers cards:  ${dealerCards[0]}, ${hiddenCards}`);
   }
 
-  console.log(`Your cards:     ${playerCards.join(', ')} (total score of ${playerScore})`);
-
+  console.log(`Your cards:     ${playerCards.join(', ')} (total score of ${playerScore})\n`);
 }
 
 function hitOrStay(score) {
-  if (score >= 17) return 'stay';
+  if (score >= DEALER_MAX_HIT_VALUE) return 'stay';
 
   return 'hit';
 }
 
-function winner(playerScore, dealerScore, gameLevel) {// game level refers to whether the score is for the 'round' or the entire 'game'
-  if (gameLevel === 'game' && WINNING_POINTS > 1) {
+function winner(playerScore, dealerScore, gameLevel) {// game level paramater refers to whether the score is for the round ('round') or the entire game ('game')
+  if (gameLevel === 'game' && POINTS_NEEDED_TO_WIN > 1) {
     return playerScore > dealerScore ? 'player' : 'dealer';
   } else if (busted(dealerScore) || (playerScore > dealerScore && !busted(playerScore))) {
     return 'player';
@@ -111,7 +106,7 @@ function winner(playerScore, dealerScore, gameLevel) {// game level refers to wh
   }
 }
 
-function declareWinner(playerScore, dealerScore, gameLevel) {// game level refers to whether the score is for the 'round' or the entire 'game'
+function declareWinner(playerScore, dealerScore, gameLevel) {// game level paramater refers to whether the score is for the round ('round') or the entire game ('game')
   switch (winner(playerScore, dealerScore, gameLevel)) {
     case 'player': console.log(`Congratulations! You have won the ${gameLevel}!\n`);
       break;
@@ -121,118 +116,110 @@ function declareWinner(playerScore, dealerScore, gameLevel) {// game level refer
   }
 }
 
-function pressAnyKey() {
-  console.log('\nPress any key to continue.');
+function pressAnyKey(message = 'Press any key to continue.') {
+  if (message) console.log(`${message}`);
   readline.question();
   console.clear();
 }
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< START OF GAME
-const WINNING_POINTS = 2;
 const GAME = 21;
+const POINTS_NEEDED_TO_WIN = 2;
+const DEALER_MAX_HIT_VALUE = 17;
 let keepPlaying = true;
-let playerTotalScore = 0;
-let dealerTotalScore = 0;
-let playerBusted = false; 
-let dealerBusted = false;
-let gameLevel = WINNING_POINTS > 1 ? 'round' : 'game';
+let gameLevel = POINTS_NEEDED_TO_WIN > 1 ? 'round' : 'game';
 
 console.log(`Welcome to ${GAME}!\n`);
 
 while (keepPlaying) {
   let currentRound = 0;
-  
+  let playerTotalScore = 0;
+  let dealerTotalScore = 0;
+
   while (true) {
     currentRound += 1;
     let deck = initializeDeck(fullDeck);
     let playerCards = [];
     let dealerCards = [];
- 
-    if (WINNING_POINTS > 1) {
-      currentRound > 1 ? console.log(`CURRENT SCORE\nYou: ${playerTotalScore}\nDealer: ${dealerTotalScore}`) :
-                         console.log(`The first player to win ${WINNING_POINTS} rounds wins.`);
+
+    if (POINTS_NEEDED_TO_WIN > 1) {
+      currentRound > 1 ? console.log(`CURRENT SCORE\nYou: ${playerTotalScore}\nDealer: ${dealerTotalScore}\n`) :
+                         console.log(`The first player to win ${POINTS_NEEDED_TO_WIN} rounds wins.\n`);
       pressAnyKey();
     }
 
     shuffle(deck);
-  
-    console.log('The deck is being shuffled. Press any key to be dealt your cards.\n');
-    readline.question();
-  
+
+    pressAnyKey('The deck is being shuffled. Press any key to be dealt your cards.\n');
+
     dealCards(deck, dealerCards, 2);
     dealCards(deck, playerCards, 2);
-  
+
     let playerScore = total(playerCards);
     let dealerScore = total(dealerCards);
-  
+
+    // Player's turn sequence
     while (true) {
-      console.clear();
       displayCards(playerCards, playerScore, dealerCards, dealerScore, 1);
-  
-      console.log("\nHit or stay?\n");
-      let answer = readline.question().toLowerCase();
-  
+
+      console.log("Hit or stay?\n");
+      let answer = readline.question().toLowerCase().trim();
+
       while (answer !== 'stay' && answer !== 'hit') {
         console.log("That's not a valid choice. Please try again.");
-        answer = readline.question().toLowerCase();
+        answer = readline.question().toLowerCase().trim();
       }
-  
+
+      console.clear();
+
       if (answer === 'hit') {
         dealCards(deck, playerCards, 1);
         playerScore = total(playerCards);
       }
-      
-      if (busted(playerScore)) playerBusted = true;
-      
-      if (answer === 'stay' || playerBusted) break;
-    }
-  
-    console.clear();
-  
-    if (playerBusted) {
-      console.log("You have busted!");
-    } else {
-      console.log("You chose to stay!");
-    }
-  
-    while (true) {
-      if (busted(dealerScore)) dealerBusted = true;
-      
-      if (playerBusted || dealerBusted || hitOrStay(dealerScore) === 'stay') {
+
+      if (busted(playerScore)) {
+        console.log("You have busted!\n");
         break;
-      } else {
-        pressAnyKey();
-        console.log("The dealer has chosen to hit.\n");
-        dealCards(deck, dealerCards, 1);
-        dealerScore = total(dealerCards);
-        displayCards(playerCards, playerScore, dealerCards, dealerScore, 1);
+      } else if (answer === 'stay') {
+        console.log("You chose to stay.\n");
+        break;
       }
     }
-  
-    if (dealerBusted) {
-      console.clear();
-      console.log("The dealer has busted.");
-    } else if (!playerBusted) {
-      console.clear();
-      console.log("The dealer has chosen to stay.");
+
+    // Computer's turn sequence
+    while (!busted(playerScore)) {
+      pressAnyKey();
+
+      if (busted(dealerScore)) {
+        console.log("The dealer has busted.\n");
+      } else if (hitOrStay(dealerScore) === 'stay') {
+        console.log("The dealer has chosen to stay.\n");
+      }
+
+      if (busted(dealerScore) || hitOrStay(dealerScore) === 'stay') break;
+
+      console.log("The dealer has chosen to hit.\n");
+      dealCards(deck, dealerCards, 1);
+      dealerScore = total(dealerCards);
+      displayCards(playerCards, playerScore, dealerCards, dealerScore, 1);
     }
-  
+
     pressAnyKey();
     declareWinner(playerScore, dealerScore, gameLevel);
     displayCards(playerCards, playerScore, dealerCards, dealerScore);
-    
-    if (WINNING_POINTS > 1) {
+
+    if (POINTS_NEEDED_TO_WIN > 1) {
       switch (winner(playerScore, dealerScore)) {
         case 'player': playerTotalScore += 1;
           break;
         case 'dealer': dealerTotalScore += 1;
       }
-      pressAnyKey();      
-      
-      if (playerTotalScore === WINNING_POINTS || dealerTotalScore === WINNING_POINTS) {
+      pressAnyKey();
+
+      if (playerTotalScore === POINTS_NEEDED_TO_WIN || dealerTotalScore === POINTS_NEEDED_TO_WIN) {
         declareWinner(playerTotalScore, dealerTotalScore, 'game');
         break;
-      }      
+      }
     } else {
       console.log();
       break;
